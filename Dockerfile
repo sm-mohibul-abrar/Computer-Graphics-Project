@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PORT=10000
 EXPOSE 10000
 
-# Install Mesa OpenGL rasterizer, FreeGLUT, virtual displays, and noVNC
+# Install OpenGL, FreeGLUT, Xvfb, x11vnc, and noVNC
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
@@ -27,8 +27,8 @@ RUN pip3 install --no-cache-dir PyOpenGL PyOpenGL_accelerate
 COPY 11.py /app/11.py
 COPY start.sh /app/start.sh
 
-# Set vnc.html as the default index page
-RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
+# Embed auto-connect and auto-scale directly into index.html
+RUN echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/vnc.html?autoconnect=true&resize=scale" /></head><body></body></html>' > /usr/share/novnc/index.html
 
 # Fix Windows CRLF line endings and grant execution permissions
 RUN sed -i 's/\r$//' /app/start.sh && chmod +x /app/start.sh
