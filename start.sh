@@ -7,8 +7,8 @@ export DISPLAY=:99
 Xvfb :99 -screen 0 1100x700x24 &
 sleep 2
 
-# 2. Start VNC server listening on IPv4 loopback
-x11vnc -display :99 -nopw -forever -shared -rfbport 5900 -listen 127.0.0.1 &
+# 2. Start VNC server (bound to IPv4 localhost only; disables IPv6 listener)
+x11vnc -display :99 -nopw -forever -shared -rfbport 5900 -localhost -no6 &
 sleep 2
 
 # 3. Start websockify proxy to translate WebSockets to the raw VNC port
