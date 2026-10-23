@@ -4,15 +4,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PORT=10000
 EXPOSE 10000
 
-# Install OpenGL, FreeGLUT, Xvfb, x11vnc, and noVNC
+# Install Mesa OpenGL rasterizer, FreeGLUT, virtual displays, X utilities, and noVNC
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-opengl \
     freeglut3-dev \
+    libglu1-mesa \
     libgl1-mesa-glx \
     libgl1-mesa-dri \
     xvfb \
+    x11-utils \
     x11vnc \
     novnc \
     websockify \
@@ -20,17 +22,17 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Install PyOpenGL
-RUN pip3 install --no-cache-dir PyOpenGL PyOpenGL_accelerate
+# Standard PyOpenGL install (clean and stable across Python 3.10)
+RUN pip3 install --no-cache-dir PyOpenGL
 
-# Copy project files directly from root
-COPY 11.py /app/11.py
+# Copy deployment assets and decouple filename by standardizing as game.py
+COPY 11.py /app/game.py
 COPY start.sh /app/start.sh
 
-# Embed auto-connect and auto-scale directly into index.html
+# Embed immediate auto-connect and auto-scale into index.html
 RUN echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/vnc.html?autoconnect=true&resize=scale" /></head><body></body></html>' > /usr/share/novnc/index.html
 
-# Fix Windows CRLF line endings and grant execution permissions
-RUN sed -i 's/\r$//' /app/start.sh && chmod +x /app/start.sh
+# Fix line endings, make executable, and ensure open permissions for container hosts
+RUN chmod +x /app/start.sh && chmod -R 777 /app /tmp
 
 CMD ["/app/start.sh"]
