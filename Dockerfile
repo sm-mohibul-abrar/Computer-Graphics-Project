@@ -21,8 +21,8 @@ WORKDIR /app
 # Install PyOpenGL
 RUN pip3 install --no-cache-dir PyOpenGL PyOpenGL_accelerate
 
-# Copy project files (JSON array format handles folder spaces)
-COPY ["First Program/11.py", "/app/11.py"]
+# Copy project files directly from root
+COPY 11.py /app/11.py
 COPY start.sh /app/start.sh
 
 # Fix Windows CRLF line endings and grant execution permissions
