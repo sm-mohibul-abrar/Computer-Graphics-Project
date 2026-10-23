@@ -1,6 +1,8 @@
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PORT=10000
+EXPOSE 10000
 
 # Install Mesa OpenGL rasterizer, FreeGLUT, virtual displays, and noVNC
 RUN apt-get update && apt-get install -y \
@@ -24,6 +26,9 @@ RUN pip3 install --no-cache-dir PyOpenGL PyOpenGL_accelerate
 # Copy project files directly from root
 COPY 11.py /app/11.py
 COPY start.sh /app/start.sh
+
+# Set vnc.html as default index so root URL opens the game directly
+RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
 
 # Fix Windows CRLF line endings and grant execution permissions
 RUN sed -i 's/\r$//' /app/start.sh && chmod +x /app/start.sh
