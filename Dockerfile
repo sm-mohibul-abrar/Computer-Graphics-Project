@@ -27,7 +27,7 @@ RUN pip3 install --no-cache-dir PyOpenGL PyOpenGL_accelerate
 COPY 11.py /app/11.py
 COPY start.sh /app/start.sh
 
-# Set vnc.html as default index so root URL opens the game directly
+# Set vnc.html as the default index page
 RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
 
 # Fix Windows CRLF line endings and grant execution permissions
