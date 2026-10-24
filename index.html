@@ -7,32 +7,45 @@
   <link rel="stylesheet" href="web/css/style.css">
 </head>
 <body>
-  <!-- 3D WebGL Canvas -->
   <canvas id="c"></canvas>
+  <div id="vg"></div>
+  <canvas id="sl"></canvas>
 
-  <!-- In-Game Heads-Up Display -->
   <div id="hud">
     <div id="hp" class="p">
-      HP <span id="ht"></span>
-      <div id="hb"><div id="hf"></div></div>
+      <div id="hb"><div id="hf"></div><b id="ht"></b></div>
+      <div class="fb"><div id="ff"></div></div>
+      <small id="ft"></small>
     </div>
-    <div id="sc" class="p">
-      SCORE<b id="sv">0</b>
-    </div>
+    <div id="sc" class="p">SCORE<b id="sv">0</b></div>
     <div id="cn" class="p"></div>
-    <div id="cv"></div>
-    <div id="sp" class="p"><span id="st"></span></div>
+    <div id="ct"><div id="cb"></div><div id="cv"></div></div>
+    <div id="sp" class="p">
+      <span id="st"></span>
+      <div id="sbar"><i id="sfill"></i><u id="smin"></u></div>
+      <em>Q / E</em>
+    </div>
+    <div id="pu"></div>
   </div>
 
-  <!-- Damage Screen Flash Overlay -->
+  <div id="sbr"></div>
   <div id="fl"></div>
+  <div id="rt"></div>
+  <div id="tv"></div>
 
-  <!-- Menu / Game Over / Pause Dialog Modal -->
+  <div id="mb">
+    <button id="bf">FLAME</button>
+    <button id="bq">Q<br>SLOWER</button>
+    <button id="be">E<br>FASTER</button>
+    <button id="bw">&#9729;<br>WEATHER</button>
+    <button id="bt">&#9728;<br>TIME</button>
+    <button id="bv">&#128065;<br>VIEW</button>
+  </div>
+
   <div id="ov">
     <div class="box" id="bx"></div>
   </div>
 
-  <!-- Core Libraries & Game Logic -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="web/js/game.js"></script>
 </body>
