@@ -7,7 +7,7 @@ const $ = i => document.getElementById(i),
   NR = 75,
   NS = 82;
 
-// Platform detection (Strictly identifies phone/touch vs PC/desktop)
+// Platform detection
 const isMobile = matchMedia('(pointer:coarse)').matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || navigator.maxTouchPoints > 0;
 
 // ---------- data ----------
@@ -728,6 +728,7 @@ function setMobileButtonsVisible(show) {
   const displayVal = show ? 'flex' : 'none';
   $('bv').style.display = displayVal;
   $('bw').style.display = displayVal;
+  $('bt').style.display = displayVal;
   $('m-speed').style.display = displayVal;
   $('bf').style.display = displayVal;
 }
@@ -776,7 +777,6 @@ function upd(dt) {
   } else if (S.st == 'play') {
     S.time += dt;
 
-    // Minimum climbing speed floor (starts at 30 km/h, climbs steadily to top speed)
     const baseMin = 7.5; // 7.5 * 4 = 30 km/h
     const vmin = Math.min(baseMin + S.time * d.vg, d.vmax);
 
@@ -1242,12 +1242,11 @@ function menu() {
   setMobileButtonsVisible(false);
   $('ov').style.display = 'flex';
 
-  // Strict separation of directions for phone vs laptop/PC
   const directionsText = isMobile
     ? `Swipe Left / Right: Change Lanes &nbsp;|&nbsp; Swipe Up: Jump &nbsp;|&nbsp; Swipe Down: Slide<br>
        Touch / Drag Screen: Aim & Shoot &nbsp;|&nbsp; Bottom-Right: Hold FLAME<br>
        Bottom-Left: &#9650; Faster / &#9660; Slower Speed<br>
-       Top-Left &#128065;: Viewpoint &nbsp;|&nbsp; Top-Right &#9729;: Weather &nbsp;|&nbsp; Volume Keys: Time / Weather`
+       Top-Left &#128065;: View &nbsp;|&nbsp; Top-Right: &#9729; Weather / &#9728; Time &nbsp;|&nbsp; Volume Keys: Cycle Weather/Time`
     : `Arrows or A / D: Change Lanes &nbsp;|&nbsp; Space / W: Jump &nbsp;|&nbsp; S: Slide<br>
        Mouse Aim + Left Click: Shoot &nbsp;|&nbsp; Hold G or Right-Click: Flamethrower<br>
        Q: Slower / E: Faster &nbsp;|&nbsp; V: Viewpoint &nbsp;|&nbsp; P: Pause &nbsp;|&nbsp; B: Menu<br>
@@ -1339,7 +1338,6 @@ const go = f => {
   if (S.st == 'play') f();
 };
 
-// Keyboard listener for PC/Desktop (and hardware volume keys on phones)
 addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if (k === 'v') {
@@ -1468,7 +1466,14 @@ $('bw').addEventListener('pointerdown', e => {
   cycWx();
 });
 
-// 3. Mobile Bottom-Left Arrow Buttons
+// 3. Mobile Top-Right Time Button
+$('bt').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  cycTime();
+});
+
+// 4. Mobile Bottom-Left Arrow Buttons
 $('be').addEventListener('pointerdown', e => {
   e.preventDefault();
   e.stopPropagation();
@@ -1480,7 +1485,7 @@ $('bq').addEventListener('pointerdown', e => {
   go(() => (S.target -= 3));
 });
 
-// 4. Mobile Bottom-Right Flame Button (multi-touch ready)
+// 5. Mobile Bottom-Right Flame Button (multi-touch ready)
 (f => {
   const b = $('bf');
   b.addEventListener('pointerdown', e => {

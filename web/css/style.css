@@ -367,6 +367,7 @@ p {
   color: #fff;
 }
 
+/* Crosshair Reticle for PC & Mobile Aiming */
 #rt {
   position: fixed;
   left: 0;
@@ -387,7 +388,7 @@ body.pl #c {
   cursor: none;
 }
 
-/* Mobile Controls */
+/* Base style for mobile control buttons */
 .m-ctrl-btn {
   display: none;
   border: 2px solid rgba(255, 255, 255, 0.65);
@@ -406,7 +407,7 @@ body.pl #c {
   transform: scale(0.93);
 }
 
-/* 1. Top-Left Viewpoint */
+/* 1. Top-Left Viewpoint Button */
 #bv {
   position: fixed;
   left: 12px;
@@ -418,7 +419,7 @@ body.pl #c {
   z-index: 10;
 }
 
-/* 2. Top-Right Weather */
+/* 2. Top-Right Weather Button */
 #bw {
   position: fixed;
   right: 12px;
@@ -430,7 +431,19 @@ body.pl #c {
   z-index: 10;
 }
 
-/* 3. Bottom-Left Arrow Container & Buttons */
+/* 3. Top-Right Time Button (Stacked below Weather) */
+#bt {
+  position: fixed;
+  right: 12px;
+  top: 66px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  font-size: 20px;
+  z-index: 10;
+}
+
+/* 4. Bottom-Left Arrow Container & Buttons */
 #m-speed {
   position: fixed;
   left: 14px;
@@ -442,14 +455,14 @@ body.pl #c {
 }
 
 #m-speed .m-ctrl-btn {
-  display: flex !important; /* Forces buttons inside m-speed to display */
+  display: flex !important;
   width: 52px;
   height: 52px;
   border-radius: 50%;
   font: 700 20px system-ui, sans-serif;
 }
 
-/* 4. Bottom-Right Flame */
+/* 5. Bottom-Right Flame Button */
 #bf {
   position: fixed;
   right: 14px;
@@ -504,7 +517,7 @@ body.pl #c {
   pointer-events: none;
 }
 
-/* Precise Mobile HUD Layout (No overlaps on phone screens) */
+/* Mobile HUD Layout (No overlaps on phone screens) */
 @media (max-width: 768px) {
   #hp {
     left: 64px;
@@ -527,7 +540,7 @@ body.pl #c {
     margin-top: 4px;
   }
   #ft {
-    display: none; /* Hide flame text in mobile HUD to save horizontal space */
+    display: none;
   }
 
   #sc {
@@ -556,7 +569,7 @@ body.pl #c {
     font-size: 9px;
   }
   #cn small {
-    display: none; /* Hide difficulty/location text during active run on mobile */
+    display: none;
   }
 
   #sp {
@@ -565,7 +578,7 @@ body.pl #c {
   }
   #pu {
     left: 14px;
-    bottom: 146px; /* Lift powerup pills neatly above the bottom-left arrow buttons */
+    bottom: 146px;
   }
   #sbr {
     display: none !important;
