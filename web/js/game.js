@@ -7,7 +7,7 @@ const $ = i => document.getElementById(i),
   NR = 75,
   NS = 82;
 
-// Platform detection
+// Platform detection (Strictly identifies phone/touch vs PC/desktop)
 const isMobile = matchMedia('(pointer:coarse)').matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || navigator.maxTouchPoints > 0;
 
 // ---------- data ----------
@@ -723,6 +723,15 @@ function clr() {
   fLight.intensity = 0;
 }
 
+function setMobileButtonsVisible(show) {
+  if (!isMobile) return;
+  const displayVal = show ? 'flex' : 'none';
+  $('bv').style.display = displayVal;
+  $('bw').style.display = displayVal;
+  $('m-speed').style.display = displayVal;
+  $('bf').style.display = displayVal;
+}
+
 function start() {
   const d = DF();
   clr();
@@ -734,7 +743,7 @@ function start() {
   });
   $('ov').style.display = 'none';
   $('hud').style.display = 'block';
-  if (isMobile) $('bv').style.display = 'flex';
+  setMobileButtonsVisible(true);
 }
 
 function avoid(e, dt, dz) {
@@ -767,20 +776,13 @@ function upd(dt) {
   } else if (S.st == 'play') {
     S.time += dt;
 
-    // Lowest speed starts at 30 km/h (7.5 raw) and climbs smoothly over time towards top speed (d.vmax)
+    // Minimum climbing speed floor (starts at 30 km/h, climbs steadily to top speed)
     const baseMin = 7.5; // 7.5 * 4 = 30 km/h
     const vmin = Math.min(baseMin + S.time * d.vg, d.vmax);
 
-    // Strict clamp: target can never fall below the dynamic climbing minimum floor (vmin)
     S.target = cl(S.target, vmin, d.vmax);
-
-    // Smooth transition towards target speed
     S.speed += (S.target - S.speed) * Math.min(1, 3 * dt);
-
-    // Strict speed floor: game speed will never run under vmin
-    if (S.speed < vmin) {
-      S.speed = vmin;
-    }
+    if (S.speed < vmin) S.speed = vmin;
 
     const sp = S.speed;
     S.D += sp * dt;
@@ -1138,8 +1140,7 @@ function draw(dt) {
   fgeo.attributes.position.needsUpdate = fgeo.attributes.color.needsUpdate = true;
 
   const isPlaying = S.st == 'play';
-  $('mb').style.display = isMobile && isPlaying ? 'grid' : 'none';
-  $('bv').style.display = isMobile && isPlaying ? 'flex' : 'none';
+  setMobileButtonsVisible(isPlaying);
   rt.style.display = isPlaying && (S.mouse || isMobile) ? 'block' : 'none';
   document.body.classList.toggle('pl', !isMobile && isPlaying && !!S.mouse);
 
@@ -1238,12 +1239,19 @@ function menu() {
   S.st = 'menu';
   clr();
   $('hud').style.display = 'none';
-  $('bv').style.display = 'none';
+  setMobileButtonsVisible(false);
   $('ov').style.display = 'flex';
 
+  // Strict separation of directions for phone vs laptop/PC
   const directionsText = isMobile
-    ? `Swipe Left/Right: Switch Lanes | Swipe Up: Jump | Swipe Down: Slide<br>Tap / Drag: Aim & Shoot | Hold FLAME: Flamethrower | &#9650; / &#9660;: Speed<br>Eye Icon (Top Left): Viewpoint | Volume Buttons: Cycle Time & Weather`
-    : `Arrows or A/D: Switch Lanes | Space / W: Jump | S: Slide<br>Mouse Aim + Left Click: Shoot | Hold G or Right-Click: Flamethrower | Q / E: Speed<br>V: Viewpoint | P: Pause | B: Menu | N: Time Cycle | M: Weather Cycle`;
+    ? `Swipe Left / Right: Change Lanes &nbsp;|&nbsp; Swipe Up: Jump &nbsp;|&nbsp; Swipe Down: Slide<br>
+       Touch / Drag Screen: Aim & Shoot &nbsp;|&nbsp; Bottom-Right: Hold FLAME<br>
+       Bottom-Left: &#9650; Faster / &#9660; Slower Speed<br>
+       Top-Left &#128065;: Viewpoint &nbsp;|&nbsp; Top-Right &#9729;: Weather &nbsp;|&nbsp; Volume Keys: Time / Weather`
+    : `Arrows or A / D: Change Lanes &nbsp;|&nbsp; Space / W: Jump &nbsp;|&nbsp; S: Slide<br>
+       Mouse Aim + Left Click: Shoot &nbsp;|&nbsp; Hold G or Right-Click: Flamethrower<br>
+       Q: Slower / E: Faster &nbsp;|&nbsp; V: Viewpoint &nbsp;|&nbsp; P: Pause &nbsp;|&nbsp; B: Menu<br>
+       N: Time Cycle &nbsp;|&nbsp; M: Weather Cycle`;
 
   $('bx').innerHTML = `<h1>DICTATOR'S DASH</h1><small>3D WEB EDITION | ENDLESS RUNNER</small><h4>SELECT DIFFICULTY</h4><div class=row>${DIFF.map(
     (d, i) => `<button class="b ${i == S.di ? 'sel' : ''}" style="--a:${css(d.col)}" onclick="pickD(${i})">${d.n}<small>Best ${hi[i]}</small></button>`
@@ -1270,7 +1278,7 @@ function pickL(i) {
 
 function showOver() {
   $('ov').style.display = 'flex';
-  $('bv').style.display = 'none';
+  setMobileButtonsVisible(false);
   $('bx').style.setProperty('--a', '#ff4d40');
   const restartBtn = isMobile ? 'RESTART' : 'RESTART [R]';
   const menuBtn = isMobile ? 'MENU' : 'MENU [B]';
@@ -1315,14 +1323,14 @@ function pause() {
   if (S.st == 'play') {
     S.st = 'paused';
     $('ov').style.display = 'flex';
-    $('bv').style.display = 'none';
+    setMobileButtonsVisible(false);
     const resumeBtn = isMobile ? 'RESUME' : 'RESUME [P]';
     const menuBtn = isMobile ? 'MENU' : 'MENU [B]';
     $('bx').innerHTML = `<h1>PAUSED</h1><div class=row><button class="b go" onclick="pause()">${resumeBtn}</button><button class="b go" onclick="menu()">${menuBtn}</button></div>`;
   } else if (S.st == 'paused') {
     S.st = 'play';
     $('ov').style.display = 'none';
-    if (isMobile) $('bv').style.display = 'flex';
+    setMobileButtonsVisible(true);
   }
 }
 
@@ -1331,6 +1339,7 @@ const go = f => {
   if (S.st == 'play') f();
 };
 
+// Keyboard listener for PC/Desktop (and hardware volume keys on phones)
 addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if (k === 'v') {
@@ -1416,17 +1425,17 @@ $('c').addEventListener('pointerdown', e => {
   }
 });
 
-// Touch drag aiming while moving on screen
+// Touch drag aiming while touching screen
 $('c').addEventListener('pointermove', e => {
   if (e.pointerType != 'mouse' && S.st == 'play') {
     updateAimerPosition(e.clientX, e.clientY);
   }
 });
 
-// Pointer up (Gestures on mobile & Aimed Shooting)
+// Pointer up (Mobile gestures & direct tap shooting)
 addEventListener('pointerup', e => {
   if (e.button == 2) S.fire = 0;
-  if (e.pointerType == 'mouse' || S.st != 'play' || (e.target.closest && e.target.closest('#mb, #bv'))) return;
+  if (e.pointerType == 'mouse' || S.st != 'play' || (e.target.closest && e.target.closest('.m-ctrl-btn, #m-speed'))) return;
   const dx = e.clientX - tx,
     dy = e.clientY - ty;
   if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy)) {
@@ -1445,7 +1454,33 @@ addEventListener('pointerup', e => {
   }
 });
 
-// Mobile Flame Button
+// 1. Mobile Top-Left Viewpoint Button
+$('bv').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  cview();
+});
+
+// 2. Mobile Top-Right Weather Button
+$('bw').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  cycWx();
+});
+
+// 3. Mobile Bottom-Left Arrow Buttons
+$('be').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  go(() => (S.target += 3));
+});
+$('bq').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  go(() => (S.target -= 3));
+});
+
+// 4. Mobile Bottom-Right Flame Button (multi-touch ready)
 (f => {
   const b = $('bf');
   b.addEventListener('pointerdown', e => {
@@ -1457,23 +1492,6 @@ addEventListener('pointerup', e => {
     b.addEventListener(n, () => f(0))
   );
 })(v => (S.fire = v && S.st == 'play' ? 1 : 0));
-
-// Mobile Slower & Faster Arrow Buttons
-$('be').addEventListener('pointerdown', e => {
-  e.preventDefault();
-  go(() => (S.target += 3));
-});
-$('bq').addEventListener('pointerdown', e => {
-  e.preventDefault();
-  go(() => (S.target -= 3));
-});
-
-// Dedicated Top-Left Eye Button for View Toggling
-$('bv').addEventListener('pointerdown', e => {
-  e.preventDefault();
-  e.stopPropagation();
-  cview();
-});
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && S.st == 'play') pause();
