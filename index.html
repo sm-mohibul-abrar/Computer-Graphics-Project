@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Dictator's Dash 3D</title>
   <link rel="stylesheet" href="web/css/style.css">
 </head>
@@ -10,6 +10,9 @@
   <canvas id="c"></canvas>
   <div id="vg"></div>
   <canvas id="sl"></canvas>
+
+  <!-- Eye Button Fixed in Top-Left Corner for Phone -->
+  <button id="bv" aria-label="Toggle View">&#128065;</button>
 
   <div id="hud">
     <div id="hp" class="p">
@@ -23,7 +26,7 @@
     <div id="sp" class="p">
       <span id="st"></span>
       <div id="sbar"><i id="sfill"></i><u id="smin"></u></div>
-      <em>Q / E</em>
+      <em id="shint">Q / E</em>
     </div>
     <div id="pu"></div>
   </div>
@@ -33,13 +36,11 @@
   <div id="rt"></div>
   <div id="tv"></div>
 
+  <!-- Mobile On-Screen Action Controls -->
   <div id="mb">
     <button id="bf">FLAME</button>
-    <button id="bq">Q<br>SLOWER</button>
-    <button id="be">E<br>FASTER</button>
-    <button id="bw">&#9729;<br>WEATHER</button>
-    <button id="bt">&#9728;<br>TIME</button>
-    <button id="bv">&#128065;<br>VIEW</button>
+    <button id="be" aria-label="Faster">&#9650;</button>
+    <button id="bq" aria-label="Slower">&#9660;</button>
   </div>
 
   <div id="ov">

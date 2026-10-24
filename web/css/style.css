@@ -6,10 +6,11 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  font: 600 14px system-ui, sans-serif;
+  font: 600 14px system-ui, -apple-system, sans-serif;
   color: #fff;
   touch-action: none;
   user-select: none;
+  -webkit-user-select: none;
 }
 
 body {
@@ -24,8 +25,8 @@ body {
 }
 
 .p {
-  background: rgba(8, 10, 20, 0.62);
-  backdrop-filter: blur(6px);
+  background: rgba(8, 10, 20, 0.65);
+  backdrop-filter: blur(8px);
   border-radius: 16px;
   padding: 8px 14px;
 }
@@ -46,6 +47,7 @@ body {
   top: 14px;
   width: min(312px, 46vw);
   padding: 10px;
+  transition: left 0.2s;
 }
 
 #hb {
@@ -272,11 +274,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .box {
-  background: rgba(8, 10, 20, 0.86);
+  background: rgba(8, 10, 20, 0.88);
   border: 2px solid var(--a, #f2bf26);
   border-radius: 22px;
   padding: 20px 24px;
@@ -309,6 +311,7 @@ small {
   color: #8a93a8;
   font-weight: 500;
   margin-top: 3px;
+  line-height: 1.5;
 }
 
 p {
@@ -365,6 +368,7 @@ p {
   color: #fff;
 }
 
+/* Crosshair Reticle for PC & Mobile Touch Aiming */
 #rt {
   position: fixed;
   left: 0;
@@ -378,40 +382,86 @@ p {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cg fill='none' stroke='black' stroke-opacity='.55' stroke-width='4.5'%3E%3Ccircle cx='24' cy='24' r='11'/%3E%3Cpath d='M24 9V3M24 39v6M9 24H3M39 24h6'/%3E%3C/g%3E%3Cg fill='none' stroke='white' stroke-width='2'%3E%3Ccircle cx='24' cy='24' r='11'/%3E%3Cpath d='M24 9V3M24 39v6M9 24H3M39 24h6'/%3E%3C/g%3E%3Ccircle cx='24' cy='24' r='2' fill='%23f2bf26'/%3E%3C/svg%3E") center/48px no-repeat;
   pointer-events: none;
   display: none;
+  z-index: 6;
 }
 
 body.pl #c {
   cursor: none;
 }
 
+/* Eye Button in Top-Left Corner */
+#bv {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  background: rgba(14, 16, 25, 0.75);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 22px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#bv:active {
+  background: rgba(45, 52, 75, 0.9);
+  transform: scale(0.94);
+}
+
+/* Bottom-Right Mobile Buttons (Flame & Arrows only) */
 #mb {
   position: fixed;
-  right: 10px;
-  bottom: 84px;
+  right: 14px;
+  bottom: 24px;
   display: none;
-  grid-template-columns: repeat(2, 54px);
-  gap: 8px;
-  z-index: 5;
+  grid-template-columns: repeat(2, 58px);
+  gap: 10px;
+  z-index: 8;
 }
 
 #mb button {
-  width: 54px;
-  height: 54px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
-  border: 2px solid #fff9;
-  background: rgba(40, 40, 60, 0.55);
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  background: rgba(20, 24, 38, 0.7);
+  backdrop-filter: blur(6px);
   color: #fff;
-  font: 700 11px system-ui;
+  font: 700 20px system-ui, sans-serif;
   touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#mb button:active {
+  background: rgba(55, 65, 95, 0.85);
+  transform: scale(0.93);
 }
 
 #mb #bf {
-  background: rgba(255, 110, 20, 0.75);
+  background: rgba(255, 110, 20, 0.85);
   grid-column: 1 / 3;
-  width: 116px;
+  width: 126px;
   height: 56px;
   border-radius: 28px;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  box-shadow: 0 0 16px rgba(255, 110, 20, 0.4);
+}
+
+#mb #bf:active {
+  background: rgba(255, 70, 0, 0.95);
 }
 
 #tv {
@@ -421,12 +471,13 @@ body.pl #c {
   transform: translateX(-50%);
   padding: 6px 16px;
   border-radius: 12px;
-  background: rgba(8, 10, 20, 0.72);
+  background: rgba(8, 10, 20, 0.85);
   opacity: 0;
   transition: opacity 0.3s;
   pointer-events: none;
   font-size: 13px;
   letter-spacing: 2px;
+  z-index: 9;
 }
 
 #vg {
@@ -452,8 +503,13 @@ body.pl #c {
   pointer-events: none;
 }
 
-@media (max-width: 760px) {
+/* Mobile Layout Offsets */
+@media (max-width: 768px) {
+  #hp {
+    left: 68px; /* Move HP bar over to accommodate the Top-Left Eye button */
+    top: 12px;
+  }
   #sbr {
-    display: none;
+    display: none !important;
   }
 }

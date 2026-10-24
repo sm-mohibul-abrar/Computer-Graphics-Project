@@ -7,11 +7,14 @@ const $ = i => document.getElementById(i),
   NR = 75,
   NS = 82;
 
+// Platform detection
+const isMobile = matchMedia('(pointer:coarse)').matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || navigator.maxTouchPoints > 0;
+
 // ---------- data ----------
 const DIFF = [
-  { n: 'Easy', col: 0x59d97f, d: 'Relaxed pace, gentle curves, forgiving hits.', hp: 130, dmg: 0.6, v0: 12, vg: 0.12, vcap: 22, vmax: 34, gap: [28, 16, 0.08], nob: [1, 1, 1, 2], gc: 0.18, curve: 0.7, ecd: 1.5, dt: 30, dm: 1, dp: 0.12, dcap: 0.25 },
-  { n: 'Medium', col: 0xffc733, d: 'The classic experience. Balanced speed and curves.', hp: 100, dmg: 1, v0: 14, vg: 0.2, vcap: 30, vmax: 42, gap: [24, 13, 0.12], nob: [1, 1, 2, 3], gc: 0.28, curve: 1, ecd: 1, dt: 12, dm: 3, dp: 0.2, dcap: 0.45 },
-  { n: 'Hard', col: 0xff4d40, d: 'Fast, dense obstacles, sharp bends. Every hit hurts.', hp: 80, dmg: 1.4, v0: 17, vg: 0.28, vcap: 34, vmax: 48, gap: [21, 12, 0.15], nob: [2, 2, 3, 3], gc: 0.4, curve: 1.25, ecd: 0.7, dt: 6, dm: 4, dp: 0.3, dcap: 0.6 }
+  { n: 'Easy', col: 0x59d97f, d: 'Relaxed pace, gentle curves, forgiving hits.', hp: 130, dmg: 0.6, v0: 12, vg: 0.12, vmax: 34, gap: [28, 16, 0.08], nob: [1, 1, 1, 2], gc: 0.18, curve: 0.7, ecd: 1.5, dt: 30, dm: 1, dp: 0.12, dcap: 0.25 },
+  { n: 'Medium', col: 0xffc733, d: 'The classic experience. Balanced speed and curves.', hp: 100, dmg: 1, v0: 14, vg: 0.2, vmax: 42, gap: [24, 13, 0.12], nob: [1, 1, 2, 3], gc: 0.28, curve: 1, ecd: 1, dt: 12, dm: 3, dp: 0.2, dcap: 0.45 },
+  { n: 'Hard', col: 0xff4d40, d: 'Fast, dense obstacles, sharp bends. Every hit hurts.', hp: 80, dmg: 1.4, v0: 17, vg: 0.28, vmax: 48, gap: [21, 12, 0.15], nob: [2, 2, 3, 3], gc: 0.4, curve: 1.25, ecd: 0.7, dt: 6, dm: 4, dp: 0.3, dcap: 0.6 }
 ];
 
 const LOC = [
@@ -22,12 +25,12 @@ const LOC = [
 ];
 
 const S = {
-  st: 'menu', di: 1, li: 0, D: 0, t: 0, time: 0, speed: 5, target: 14, lane: 2,
+  st: 'menu', di: 1, li: 0, D: 0, t: 0, time: 0, speed: 7.5, target: 14, lane: 2,
   px: 0, py: 0, vy: 0, slide: 0, hp: 100, score: 0, coins: 0, kills: 0, chain: 0,
   inv: 0, cd: 0, roll: 0, cdir: 1, segs: [], cend: 40, rt: new Float32Array(NR + 1),
   k0: 0, obs: [], cns: [], gs: [], bl: [], next: 20, phase: 0, wx: 0, eb: [], dr: [],
   it: [], view: 0, tod: 3, clock: R() * 120, wmode: 0, wn: 0, wt: 30, wk: 1, envT: 0,
-  shield: 0, rapid: 0, shake: 0, fire: 0, fuel: 100, heat: 0, mx: 0, my: 0, mouse: 0, aim: null
+  shield: 0, rapid: 0, shake: 0, fire: 0, fuel: 100, heat: 0, mx: innerWidth / 2, my: innerHeight * 0.45, mouse: 0, aim: [0, 0, -1]
 };
 
 let hi = [0, 0, 0];
@@ -155,7 +158,7 @@ const bt = (() => {
   return t;
 })();
 
-// ground + road ribbons (re-shaped every frame to follow the bend)
+// ground + road ribbons
 const B = c => new THREE.MeshBasicMaterial({ color: c }),
   gm = B(0),
   rm = new THREE.MeshBasicMaterial({ color: 0, map: bt }),
@@ -204,8 +207,7 @@ scene.add(dash);
 
 // characters
 function figure(vest, pants, skin, hair, en) {
-  const g = new THREE.Group(),
-    L = [];
+  const g = new THREE.Group(), L = [];
   for (const s of [-1, 1]) {
     const lg = new THREE.Group();
     lg.position.set(s * 0.2, 0.9, 0);
@@ -319,7 +321,7 @@ fgeo.setAttribute('color', new THREE.BufferAttribute(fcol, 3));
 
 const fpt = new THREE.Points(
   fgeo,
-  new THREE.PointsMaterial({ size: 0.75, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })
+  new THREE.PointsMaterial({ size: 0.8, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })
 );
 fpt.frustumCulled = false;
 scene.add(fpt);
@@ -334,12 +336,12 @@ const rx = (x, z) => x + off(z),
 
 function burst(x, y, z, n) {
   for (let i = 0; i < n && fp.length < FN; i++)
-    fp.push({ x, y, z, vx: rr(-4, 4), vy: rr(0, 6), vz: rr(-4, 4), l: 0.5, L: 0.5 });
+    fp.push({ x, y, z, vx: rr(-4, 4), vy: rr(1, 6), vz: rr(-4, 4), l: 0.5, L: 0.5 });
 }
 
+// 3D Raycasting Aimer
 function aim() {
   const [hx, hy] = hand();
-  if (!S.mouse) return [0, 0, -1];
   hm.set((S.mx / innerWidth) * 2 - 1, 1 - (S.my / innerHeight) * 2);
   cam.updateMatrixWorld();
   ray.setFromCamera(hm, cam);
@@ -349,31 +351,33 @@ function aim() {
     const t = (hy - r.origin.y) / r.direction.y;
     if (t > 0) T = r.origin.clone().addScaledVector(r.direction, t);
   }
-  if (!T && r.direction.z < -1e-3) T = r.origin.clone().addScaledVector(r.direction, (-30 - r.origin.z) / r.direction.z);
+  if (!T && r.direction.z < -1e-3) {
+    T = r.origin.clone().addScaledVector(r.direction, (-25 - r.origin.z) / r.direction.z);
+  }
   if (!T) return [0, 0, -1];
   const h = hand();
   let v = [T.x - h[0], T.y - h[1], T.z - h[2]];
   if (Math.hypot(...v) < 1.5) v = [r.direction.x, r.direction.y, r.direction.z];
   const yaw = cl(Math.atan2(v[0], -v[2]) * 1.2, -1.48, 1.48),
-    pit = cl(Math.atan2(v[1], Math.hypot(v[0], v[2])), -0.78, 1.05);
+    pit = cl(Math.atan2(v[1], Math.hypot(v[0], v[2])), -0.8, 1.05);
   return [Math.sin(yaw) * Math.cos(pit), Math.sin(pit), -Math.cos(yaw) * Math.cos(pit)];
 }
 
+// Tuned Flame Hitbox
 function cone(x, y, z) {
   const [hx, hy, hz] = hand(),
-    d = S.aim,
+    d = S.aim || [0, 0, -1],
     vx = x - hx,
     vy = y - hy,
     vz = z - hz,
     al = vx * d[0] + vy * d[1] + vz * d[2];
-  if (al < 0.5 || al > 15) return false;
-  const r = 1.1 + al * 0.1;
-  return vx * vx + vy * vy + vz * vz - al * al < r * r;
+  if (al < 0.6 || al > 15.5) return false;
+  const r = 0.9 + al * 0.11;
+  return (vx * vx + vy * vy + vz * vz - al * al) < (r * r);
 }
 
 function mkDrone() {
-  const g = new THREE.Group(),
-    r = new THREE.Group();
+  const g = new THREE.Group(), r = new THREE.Group();
   mk(SG, 0x383d4d, 0, 0, 0, 0.5, 0.3, 0.5, g);
   mk(SG, 0xff1a1a, 0, 0, 0.4, 0.14, 0.14, 0.14, g, 0xff0000);
   mk(BG, 0x262629, 0, -0.3, 0, 0.3, 0.12, 0.5, g);
@@ -692,15 +696,16 @@ function hurt(n) {
   }
 }
 
-function shoot(st) {
+function shoot() {
   if (S.st != 'play' || S.cd > 0) return;
   const [hx, hy, hz] = hand(),
-    a = st ? [0, 0, -1] : S.aim || [0, 0, -1],
+    a = S.aim || [0, 0, -1],
     m = new THREE.Mesh(SG, new THREE.MeshBasicMaterial({ color: 0xffee55 }));
-  m.scale.setScalar(0.2);
+  m.scale.setScalar(0.22);
   scene.add(m);
-  S.bl.push({ x: hx, y: hy, z: hz, vx: a[0] * 50, vy: a[1] * 50, vz: a[2] * 50, m });
+  S.bl.push({ x: hx, y: hy, z: hz, vx: a[0] * 55, vy: a[1] * 55, vz: a[2] * 55, m });
   S.cd = S.rapid > 0 ? 0.1 : 0.28;
+  sfx(720, 45);
 }
 
 function clr() {
@@ -721,13 +726,15 @@ function clr() {
 function start() {
   const d = DF();
   clr();
+  const startSpd = Math.max(7.5, d.v0);
   Object.assign(S, {
-    st: 'play', time: 0, speed: d.v0, target: d.v0, lane: 2, px: 0, py: 0, vy: 0,
+    st: 'play', time: 0, speed: startSpd, target: startSpd, lane: 2, px: 0, py: 0, vy: 0,
     slide: 0, hp: d.hp, score: 0, coins: 0, kills: 0, chain: 0, inv: 0, cd: 0,
     next: S.D + 20, fire: 0, fuel: 100, heat: 0, shield: 0, rapid: 0, shake: 0
   });
   $('ov').style.display = 'none';
   $('hud').style.display = 'block';
+  if (isMobile) $('bv').style.display = 'flex';
 }
 
 function avoid(e, dt, dz) {
@@ -759,9 +766,22 @@ function upd(dt) {
     S.speed = 5;
   } else if (S.st == 'play') {
     S.time += dt;
-    const vmin = Math.min(d.v0 - 2 + S.time * d.vg, d.vcap);
+
+    // Lowest speed starts at 30 km/h (7.5 raw) and climbs smoothly over time towards top speed (d.vmax)
+    const baseMin = 7.5; // 7.5 * 4 = 30 km/h
+    const vmin = Math.min(baseMin + S.time * d.vg, d.vmax);
+
+    // Strict clamp: target can never fall below the dynamic climbing minimum floor (vmin)
     S.target = cl(S.target, vmin, d.vmax);
+
+    // Smooth transition towards target speed
     S.speed += (S.target - S.speed) * Math.min(1, 3 * dt);
+
+    // Strict speed floor: game speed will never run under vmin
+    if (S.speed < vmin) {
+      S.speed = vmin;
+    }
+
     const sp = S.speed;
     S.D += sp * dt;
     S.score += (sp * dt * 0.2 * sp) / 14;
@@ -848,53 +868,60 @@ function upd(dt) {
         S.kills++;
         S.chain++;
         S.score += pts * mult();
-        burst(x, y, e.z, 14);
+        burst(x, y, e.z, 16);
         sfx(pts > 60 ? 450 : 700, pts > 60 ? 80 : 60);
       };
 
     if (S.heat && S.fuel > 25) S.heat = 0;
+
     if (S.fire && !S.heat) {
-      S.fuel -= 38 * dt;
+      S.fuel -= 36 * dt;
       if (S.fuel <= 0) {
         S.fuel = 0;
         S.heat = 1;
       }
       for (let i = 0; i < 7 && fp.length < FN; i++) {
-        const L = rr(0.4, 0.7),
-          v = rr(18, 27),
+        const L = rr(0.45, 0.65),
+          v = rr(22, 27),
           a = S.aim;
-        fp.push({ x: hd[0], y: hd[1], z: hd[2], vx: a[0] * v + rr(-1.6, 1.6), vy: a[1] * v + rr(-1, 1.2), vz: a[2] * v + rr(-1.6, 1.6), l: L, L });
+        fp.push({ x: hd[0], y: hd[1], z: hd[2], vx: a[0] * v + rr(-1.5, 1.5), vy: a[1] * v + rr(-1.0, 1.0), vz: a[2] * v + rr(-1.5, 1.5), l: L, L });
       }
+
       for (const o of S.obs) {
         const X = rx(o.x, o.z),
           cy = { crate: 0.9, barrier: 0.45, beam: 1.5 }[o.k];
         if (!o.dead && cone(X, cy, o.z)) {
-          o.burn = (o.burn || 0) + dt;
-          burst(X, 0.8, o.z, 1);
-          if (o.burn > { crate: 0.35, barrier: 0.5, beam: 0.7 }[o.k]) {
+          o.burn = (o.burn || 0) + dt * 2.2;
+          burst(X, 0.8, o.z, 2);
+          if (o.burn > { crate: 0.25, barrier: 0.35, beam: 0.45 }[o.k]) {
             o.dead = 1;
             S.score += 15 * mult();
             burst(X, 1, o.z, 18);
+            sfx(380, 70);
           }
         }
       }
+
       for (const g of S.gs) {
         const X = rx(g.x, g.z);
         if (!g.dead && cone(X, 1.1, g.z)) {
-          g.burn = (g.burn || 0) + dt;
-          burst(X, 1.2, g.z, 1);
-          if (g.burn > 0.5) kill(g, 50, X, 1.2);
+          g.burn = (g.burn || 0) + dt * 2.4;
+          burst(X, 1.2, g.z, 2);
+          if (g.burn > 0.3) kill(g, 50, X, 1.2);
         }
       }
+
       for (const r of S.dr) {
         const X = rx(r.x, r.z);
         if (!r.dead && cone(X, r.y, r.z)) {
-          r.burn = (r.burn || 0) + dt;
-          burst(X, r.y, r.z, 1);
-          if (r.burn > 0.4) kill(r, 75, X, r.y);
+          r.burn = (r.burn || 0) + dt * 2.4;
+          burst(X, r.y, r.z, 2);
+          if (r.burn > 0.28) kill(r, 75, X, r.y);
         }
       }
-    } else S.fuel = Math.min(100, S.fuel + 14 * dt);
+    } else {
+      S.fuel = Math.min(100, S.fuel + 15 * dt);
+    }
 
     fLight.intensity = S.fire && !S.heat ? 2.5 : 0;
     fLight.position.set(hd[0], hd[1] + 0.3, hd[2] - 1);
@@ -905,20 +932,20 @@ function upd(dt) {
         b.y += (b.vy * dt) / 3;
         b.z += (b.vz * dt) / 3;
         for (const o of S.obs) {
-          if (o.k == 'crate' && !o.dead && (rx(o.x, o.z) - b.x) ** 2 + (0.9 - b.y) ** 2 + (o.z - b.z) ** 2 < 1.3) {
+          if (o.k == 'crate' && !o.dead && (rx(o.x, o.z) - b.x) ** 2 + (0.9 - b.y) ** 2 + (o.z - b.z) ** 2 < 1.4) {
             o.dead = b.dead = 1;
             S.score += 20 * mult();
             burst(rx(o.x, o.z), 1, o.z, 16);
           }
         }
         for (const g of S.gs) {
-          if (!g.dead && (rx(g.x, g.z) - b.x) ** 2 + (1.1 - b.y) ** 2 + (g.z - b.z) ** 2 < 1) {
+          if (!g.dead && (rx(g.x, g.z) - b.x) ** 2 + (1.1 - b.y) ** 2 + (g.z - b.z) ** 2 < 1.2) {
             b.dead = 1;
             kill(g, 50, rx(g.x, g.z), 1.2);
           }
         }
         for (const r of S.dr) {
-          if (!r.dead && (rx(r.x, r.z) - b.x) ** 2 + (r.y - b.y) ** 2 + (r.z - b.z) ** 2 < 1.1) {
+          if (!r.dead && (rx(r.x, r.z) - b.x) ** 2 + (r.y - b.y) ** 2 + (r.z - b.z) ** 2 < 1.3) {
             b.dead = 1;
             kill(r, 75, rx(r.x, r.z), r.y);
           }
@@ -1006,8 +1033,8 @@ function slines(sp) {
       x1 = w / 2 + c * w * r1,
       y1 = h / 2 + n * h * r1,
       g = sx.createLinearGradient(x0, y0, x1, y1);
-    g.addColorStop(0, 'rgba(255, 255, 255, 0)');
-    g.addColorStop(1, 'rgba(255, 255, 255,' + 0.22 * k + ')');
+    g.addColorStop(0, 'rgba(255,255,255,0)');
+    g.addColorStop(1, 'rgba(255,255,255,' + 0.22 * k + ')');
     sx.strokeStyle = g;
     sx.beginPath();
     sx.moveTo(x0, y0);
@@ -1110,10 +1137,11 @@ function draw(dt) {
   fgeo.setDrawRange(0, fp.length);
   fgeo.attributes.position.needsUpdate = fgeo.attributes.color.needsUpdate = true;
 
-  const pm = S.st == 'play' && S.mouse;
-  $('mb').style.display = coarse && S.st == 'play' ? 'grid' : 'none';
-  rt.style.display = pm ? 'block' : 'none';
-  document.body.classList.toggle('pl', !!pm);
+  const isPlaying = S.st == 'play';
+  $('mb').style.display = isMobile && isPlaying ? 'grid' : 'none';
+  $('bv').style.display = isMobile && isPlaying ? 'flex' : 'none';
+  rt.style.display = isPlaying && (S.mouse || isMobile) ? 'block' : 'none';
+  document.body.classList.toggle('pl', !isMobile && isPlaying && !!S.mouse);
 
   if (S.wx) {
     const a = wp.geometry.attributes.position.array;
@@ -1159,15 +1187,18 @@ function draw(dt) {
     const d = DF(),
       h = cl(S.hp / d.hp, 0, 1),
       fr = cl(sp / d.vmax, 0, 1),
-      vmin = Math.min(d.v0 - 2 + S.time * d.vg, d.vcap);
+      baseMin = 7.5,
+      vmin = Math.min(baseMin + S.time * d.vg, d.vmax);
 
     $('hf').style.width = Math.max(0, h) * 100 + '%';
     $('hf').style.background = 'rgb(' + ((242 - 165 * h) | 0) + ',' + ((64 + 166 * h) | 0) + ',' + ((51 + 80 * h) | 0) + ')';
     $('ht').textContent = 'HP  ' + Math.max(0, S.hp) + ' / ' + d.hp;
     $('ff').style.width = S.fuel + '%';
     $('ff').style.background = S.heat ? '#f04030' : '#ff9a20';
-    $('ft').textContent = S.heat ? 'OVERHEATED' : 'FLAME [G]';
+
+    $('ft').textContent = S.heat ? 'OVERHEATED' : (isMobile ? 'FLAME' : 'FLAME [G]');
     $('ft').style.color = S.heat ? '#ff5a40' : '#ffcc66';
+
     $('sv').textContent = S.score | 0;
     $('cn').innerHTML =
       '<i class=coin></i><b>' +
@@ -1188,12 +1219,16 @@ function draw(dt) {
     $('smin').style.left = (vmin / d.vmax) * 100 + '%';
     $('st').textContent = ((sp * 4) | 0) + ' km/h';
 
+    $('shint').style.display = isMobile ? 'none' : 'inline';
+
     const k = curv(S.D + 35);
     $('cv').innerHTML = Math.abs(k) > 7e-4 ? (k > 0 ? '<b>&#9654;&#9654;&#9654;</b> CURVE RIGHT' : 'CURVE LEFT <b>&#9664;&#9664;&#9664;</b>') : '';
   }
 
-  $('sbr').textContent =
-    '[N] Time: ' + TN[S.tod] + '    [M] Weather: ' + WMN[S.wmode] + (S.wmode ? '' : ' (' + WNN[S.wx] + ')') + '    [V] View: ' + ['Chase', 'First-person', 'Overhead'][S.view] + '    [B] Menu';
+  if (!isMobile) {
+    $('sbr').textContent =
+      '[N] Time: ' + TN[S.tod] + '    [M] Weather: ' + WMN[S.wmode] + (S.wmode ? '' : ' (' + WNN[S.wx] + ')') + '    [V] View: ' + ['Chase', 'First-person', 'Overhead'][S.view] + '    [B] Menu';
+  }
   slines(sp);
   ren.render(scene, cam);
 }
@@ -1203,7 +1238,13 @@ function menu() {
   S.st = 'menu';
   clr();
   $('hud').style.display = 'none';
+  $('bv').style.display = 'none';
   $('ov').style.display = 'flex';
+
+  const directionsText = isMobile
+    ? `Swipe Left/Right: Switch Lanes | Swipe Up: Jump | Swipe Down: Slide<br>Tap / Drag: Aim & Shoot | Hold FLAME: Flamethrower | &#9650; / &#9660;: Speed<br>Eye Icon (Top Left): Viewpoint | Volume Buttons: Cycle Time & Weather`
+    : `Arrows or A/D: Switch Lanes | Space / W: Jump | S: Slide<br>Mouse Aim + Left Click: Shoot | Hold G or Right-Click: Flamethrower | Q / E: Speed<br>V: Viewpoint | P: Pause | B: Menu | N: Time Cycle | M: Weather Cycle`;
+
   $('bx').innerHTML = `<h1>DICTATOR'S DASH</h1><small>3D WEB EDITION | ENDLESS RUNNER</small><h4>SELECT DIFFICULTY</h4><div class=row>${DIFF.map(
     (d, i) => `<button class="b ${i == S.di ? 'sel' : ''}" style="--a:${css(d.col)}" onclick="pickD(${i})">${d.n}<small>Best ${hi[i]}</small></button>`
   ).join('')}</div>
@@ -1211,7 +1252,8 @@ function menu() {
     (l, i) =>
       `<button class="b card ${i == S.li ? 'sel' : ''}" style="--a:${css(l.ac)}" onclick="pickL(${i})"><i style="background:linear-gradient(${css(l.top)},${css(l.sky)} 60%,${css(l.gr)} 60%)"></i>${l.n}<small>${l.tag}</small></button>`
   ).join('')}</div>
-  <p style="color:${css(LC().ac)}">${LC().d}</p><button class="b go" onclick="start()">START RUN</button><small>Arrows or A/D lanes | W/Space jump | S slide | mouse aim + click: shoot | F: straight shot | hold G or right-click: flamethrower | P pause | B menu | V view | N time | M weather | touch: swipe, tap to shoot</small>`;
+  <p style="color:${css(LC().ac)}">${LC().d}</p><button class="b go" onclick="start()">START RUN</button>
+  <small style="margin-top:12px;color:#a0aabf">${directionsText}</small>`;
   $('bx').style.setProperty('--a', css(LC().ac));
 }
 
@@ -1228,8 +1270,11 @@ function pickL(i) {
 
 function showOver() {
   $('ov').style.display = 'flex';
+  $('bv').style.display = 'none';
   $('bx').style.setProperty('--a', '#ff4d40');
-  $('bx').innerHTML = `<h1 style="color:#ff5040">GAME OVER</h1><p>Score ${S.score | 0} &nbsp; Coins ${S.coins} &nbsp; Guards downed ${S.kills}</p><p style="color:#f2bf26">Best (${DF().n}): ${hi[S.di]}</p><div class=row><button class="b go" onclick="start()">RESTART [R]</button><button class="b go" style="border-color:#ffc733;background:#4a3a10" onclick="menu()">MENU [B]</button></div>`;
+  const restartBtn = isMobile ? 'RESTART' : 'RESTART [R]';
+  const menuBtn = isMobile ? 'MENU' : 'MENU [B]';
+  $('bx').innerHTML = `<h1 style="color:#ff5040">GAME OVER</h1><p>Score ${S.score | 0} &nbsp; Coins ${S.coins} &nbsp; Guards downed ${S.kills}</p><p style="color:#f2bf26">Best (${DF().n}): ${hi[S.di]}</p><div class=row><button class="b go" onclick="start()">${restartBtn}</button><button class="b go" style="border-color:#ffc733;background:#4a3a10" onclick="menu()">${menuBtn}</button></div>`;
 }
 
 function toast(m) {
@@ -1270,33 +1315,39 @@ function pause() {
   if (S.st == 'play') {
     S.st = 'paused';
     $('ov').style.display = 'flex';
-    $('bx').innerHTML = '<h1>PAUSED</h1><div class=row><button class="b go" onclick="pause()">RESUME [P]</button><button class="b go" onclick="menu()">MENU [B]</button></div>';
+    $('bv').style.display = 'none';
+    const resumeBtn = isMobile ? 'RESUME' : 'RESUME [P]';
+    const menuBtn = isMobile ? 'MENU' : 'MENU [B]';
+    $('bx').innerHTML = `<h1>PAUSED</h1><div class=row><button class="b go" onclick="pause()">${resumeBtn}</button><button class="b go" onclick="menu()">${menuBtn}</button></div>`;
   } else if (S.st == 'paused') {
     S.st = 'play';
     $('ov').style.display = 'none';
+    if (isMobile) $('bv').style.display = 'flex';
   }
 }
 
-// ---------- input ----------
+// ---------- input handling ----------
 const go = f => {
   if (S.st == 'play') f();
 };
 
 addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
-  if (k == 'v') {
+  if (k === 'v') {
     cview();
     return;
   }
-  if (k == 'm' || k == 'audiovolumeup') {
+  if (k === 'm' || k === 'audiovolumeup' || k === 'volumeup') {
+    e.preventDefault();
     cycWx();
     return;
   }
-  if (k == 'n' || k == 'audiovolumedown') {
+  if (k === 'n' || k === 'audiovolumedown' || k === 'volumedown') {
+    e.preventDefault();
     cycTime();
     return;
   }
-  if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'audiovolumeup', 'audiovolumedown'].includes(k)) e.preventDefault();
+  if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) e.preventDefault();
   if (S.st == 'menu') {
     if (k == 'enter' || k == ' ') start();
     else if ('123'.includes(k) && k.length == 1) pickD(+k - 1);
@@ -1323,15 +1374,11 @@ addEventListener('keydown', e => {
       if (S.py > 0.05) S.vy = -14;
       else S.slide = 0.7;
     });
-  else if (k == 'f') shoot(1);
+  else if (k == 'f') shoot();
   else if (k == 'g') S.fire = 1;
   else if (k == 'q') go(() => (S.target -= 3));
   else if (k == 'e') go(() => (S.target += 3));
 });
-
-let tx = 0,
-  ty = 0;
-const rt = $('rt');
 
 addEventListener('keyup', e => {
   if (e.key.toLowerCase() == 'g') S.fire = 0;
@@ -1339,66 +1386,94 @@ addEventListener('keyup', e => {
 
 addEventListener('contextmenu', e => e.preventDefault());
 
-addEventListener('pointermove', e => {
-  if (e.pointerType != 'mouse') return;
+let tx = 0, ty = 0;
+const rt = $('rt');
+
+function updateAimerPosition(clientX, clientY) {
   S.mouse = 1;
-  S.mx = e.clientX;
-  S.my = e.clientY;
+  S.mx = clientX;
+  S.my = clientY;
   rt.style.left = S.mx + 'px';
   rt.style.top = S.my + 'px';
+  S.aim = aim();
+}
+
+// Mouse aiming on PC
+addEventListener('pointermove', e => {
+  if (e.pointerType == 'mouse') {
+    updateAimerPosition(e.clientX, e.clientY);
+  }
 });
 
+// Canvas pointer down
 $('c').addEventListener('pointerdown', e => {
   tx = e.clientX;
   ty = e.clientY;
+  updateAimerPosition(e.clientX, e.clientY);
   if (e.pointerType == 'mouse' && S.st == 'play') {
     if (e.button == 2) S.fire = 1;
     else shoot();
   }
 });
 
+// Touch drag aiming while moving on screen
+$('c').addEventListener('pointermove', e => {
+  if (e.pointerType != 'mouse' && S.st == 'play') {
+    updateAimerPosition(e.clientX, e.clientY);
+  }
+});
+
+// Pointer up (Gestures on mobile & Aimed Shooting)
 addEventListener('pointerup', e => {
   if (e.button == 2) S.fire = 0;
-  if (e.pointerType == 'mouse' || S.st != 'play' || (e.target.closest && e.target.closest('#mb'))) return;
+  if (e.pointerType == 'mouse' || S.st != 'play' || (e.target.closest && e.target.closest('#mb, #bv'))) return;
   const dx = e.clientX - tx,
     dy = e.clientY - ty;
-  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) S.lane = cl(S.lane + (dx > 0 ? 1 : -1), 0, 4);
-  else if (dy < -40) {
+  if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy)) {
+    S.lane = cl(S.lane + (dx > 0 ? 1 : -1), 0, 4);
+  } else if (dy < -35) {
     if (S.py <= 0.01) {
       S.vy = 9;
       S.slide = 0;
     }
-  } else if (dy > 40) {
+  } else if (dy > 35) {
     if (S.py > 0.05) S.vy = -14;
     else S.slide = 0.7;
-  } else shoot(1);
+  } else {
+    updateAimerPosition(e.clientX, e.clientY);
+    shoot();
+  }
 });
 
-const coarse = matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0;
-
+// Mobile Flame Button
 (f => {
   const b = $('bf');
   b.addEventListener('pointerdown', e => {
     e.preventDefault();
+    e.stopPropagation();
     f(1);
   });
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => b.addEventListener(n, () => f(0)));
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(n =>
+    b.addEventListener(n, () => f(0))
+  );
 })(v => (S.fire = v && S.st == 'play' ? 1 : 0));
 
-$('bw').addEventListener('pointerdown', e => {
+// Mobile Slower & Faster Arrow Buttons
+$('be').addEventListener('pointerdown', e => {
   e.preventDefault();
-  cycWx();
+  go(() => (S.target += 3));
 });
-$('bt').addEventListener('pointerdown', e => {
+$('bq').addEventListener('pointerdown', e => {
   e.preventDefault();
-  cycTime();
+  go(() => (S.target -= 3));
 });
+
+// Dedicated Top-Left Eye Button for View Toggling
 $('bv').addEventListener('pointerdown', e => {
   e.preventDefault();
+  e.stopPropagation();
   cview();
 });
-$('bq').addEventListener('pointerdown', () => go(() => (S.target -= 3)));
-$('be').addEventListener('pointerdown', () => go(() => (S.target += 3)));
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && S.st == 'play') pause();
@@ -1418,6 +1493,7 @@ rs();
 applyLoc();
 menu();
 
+// Main game loop
 let last = performance.now();
 (function loop(n) {
   requestAnimationFrame(loop);
