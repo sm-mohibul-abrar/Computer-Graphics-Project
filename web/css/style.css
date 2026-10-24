@@ -367,7 +367,6 @@ p {
   color: #fff;
 }
 
-/* Crosshair Reticle for PC & Mobile Aiming */
 #rt {
   position: fixed;
   left: 0;
@@ -388,7 +387,7 @@ body.pl #c {
   cursor: none;
 }
 
-/* Base style for mobile control buttons */
+/* Mobile Controls */
 .m-ctrl-btn {
   display: none;
   border: 2px solid rgba(255, 255, 255, 0.65);
@@ -407,31 +406,31 @@ body.pl #c {
   transform: scale(0.93);
 }
 
-/* 1. Viewpoint Button: Top Left Corner */
+/* 1. Top-Left Viewpoint */
 #bv {
   position: fixed;
   left: 12px;
   top: 12px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  font-size: 22px;
-  z-index: 10;
-}
-
-/* 2. Weather Button: Top Right Corner */
-#bw {
-  position: fixed;
-  right: 12px;
-  top: 12px;
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   font-size: 20px;
   z-index: 10;
 }
 
-/* 3. Speed Arrow Buttons: Bottom Left Corner */
+/* 2. Top-Right Weather */
+#bw {
+  position: fixed;
+  right: 12px;
+  top: 12px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  font-size: 19px;
+  z-index: 10;
+}
+
+/* 3. Bottom-Left Arrow Container & Buttons */
 #m-speed {
   position: fixed;
   left: 14px;
@@ -442,25 +441,26 @@ body.pl #c {
   z-index: 8;
 }
 
-#m-speed button {
-  width: 54px;
-  height: 54px;
+#m-speed .m-ctrl-btn {
+  display: flex !important; /* Forces buttons inside m-speed to display */
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   font: 700 20px system-ui, sans-serif;
 }
 
-/* 4. Flame Button: Bottom Right Corner */
+/* 4. Bottom-Right Flame */
 #bf {
   position: fixed;
   right: 14px;
   bottom: 20px;
   width: 116px;
-  height: 56px;
-  border-radius: 28px;
+  height: 54px;
+  border-radius: 27px;
   font: 800 15px system-ui, sans-serif;
   letter-spacing: 2px;
   background: rgba(255, 110, 20, 0.85);
-  box-shadow: 0 0 18px rgba(255, 110, 20, 0.45);
+  box-shadow: 0 0 16px rgba(255, 110, 20, 0.45);
   z-index: 8;
 }
 
@@ -471,7 +471,7 @@ body.pl #c {
 #tv {
   position: fixed;
   left: 50%;
-  top: 130px;
+  top: 125px;
   transform: translateX(-50%);
   padding: 6px 16px;
   border-radius: 12px;
@@ -484,17 +484,14 @@ body.pl #c {
   z-index: 9;
 }
 
-#vg {
+#vg, #sl {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
 }
 
-#sl {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
+#vg {
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
 }
 
 #sbr {
@@ -507,19 +504,68 @@ body.pl #c {
   pointer-events: none;
 }
 
-/* Responsive Offsets for Phone Screen */
+/* Precise Mobile HUD Layout (No overlaps on phone screens) */
 @media (max-width: 768px) {
   #hp {
-    left: 68px; /* Offset right to accommodate Top-Left Viewpoint */
+    left: 64px;
     top: 12px;
+    width: 110px;
+    padding: 6px 8px;
+    border-radius: 12px;
   }
-  #cn {
-    right: 68px; /* Offset left to accommodate Top-Right Weather */
+  #hb {
+    height: 12px;
+  }
+  #hb b {
+    font-size: 9px;
+    top: -1px;
+    left: 4px;
+  }
+  .fb {
+    width: 65px;
+    height: 5px;
+    margin-top: 4px;
+  }
+  #ft {
+    display: none; /* Hide flame text in mobile HUD to save horizontal space */
+  }
+
+  #sc {
     top: 12px;
+    min-width: auto;
+    padding: 4px 10px;
+    font-size: 9px;
+    border-radius: 12px;
+  }
+  #sc b {
+    font-size: 16px;
+  }
+
+  #cn {
+    right: 64px;
+    top: 12px;
+    width: 100px;
+    padding: 6px 8px;
+    border-radius: 12px;
+  }
+  #cn b {
+    font-size: 14px;
+    margin-right: 4px;
+  }
+  #cn span {
+    font-size: 9px;
+  }
+  #cn small {
+    display: none; /* Hide difficulty/location text during active run on mobile */
+  }
+
+  #sp {
+    width: min(200px, 48vw);
+    bottom: 14px;
   }
   #pu {
     left: 14px;
-    bottom: 148px; /* Sit neatly above Bottom-Left Speed arrows */
+    bottom: 146px; /* Lift powerup pills neatly above the bottom-left arrow buttons */
   }
   #sbr {
     display: none !important;
