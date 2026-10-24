@@ -143,7 +143,7 @@ const wt = (() => {
   return t;
 })();
 
-const bt = (() => {
+const btMap = (() => {
   const c = document.createElement('canvas');
   c.width = 1;
   c.height = 2;
@@ -161,7 +161,7 @@ const bt = (() => {
 // ground + road ribbons
 const B = c => new THREE.MeshBasicMaterial({ color: c }),
   gm = B(0),
-  rm = new THREE.MeshBasicMaterial({ color: 0, map: bt }),
+  rm = new THREE.MeshBasicMaterial({ color: 0, map: btMap }),
   em = B(0),
   dm = B(0),
   rib = [];
@@ -1062,7 +1062,7 @@ function draw(dt) {
     }
     r.g.attributes.position.needsUpdate = true;
   }
-  bt.offset.y = S.D / 8;
+  btMap.offset.y = S.D / 8;
   let n = 0;
   for (let j = 0; j < 26; j++) {
     const z = 6 - j * 6 + (S.D % 6),
@@ -1246,7 +1246,7 @@ function menu() {
     ? `Swipe Left / Right: Change Lanes &nbsp;|&nbsp; Swipe Up: Jump &nbsp;|&nbsp; Swipe Down: Slide<br>
        Touch / Drag Screen: Aim & Shoot &nbsp;|&nbsp; Bottom-Right: Hold FLAME<br>
        Bottom-Left: &#9650; Faster / &#9660; Slower Speed<br>
-       Top-Left &#128065;: View &nbsp;|&nbsp; Top-Right: &#9729; Weather / &#9728; Time &nbsp;|&nbsp; Volume Keys: Cycle Weather/Time`
+       Top Center: Tap SCORE &#9208; to Pause &nbsp;|&nbsp; Top-Left &#128065;: View &nbsp;|&nbsp; Top-Right: &#9729; / &#9728;`
     : `Arrows or A / D: Change Lanes &nbsp;|&nbsp; Space / W: Jump &nbsp;|&nbsp; S: Slide<br>
        Mouse Aim + Left Click: Shoot &nbsp;|&nbsp; Hold G or Right-Click: Flamethrower<br>
        Q: Slower / E: Faster &nbsp;|&nbsp; V: Viewpoint &nbsp;|&nbsp; P: Pause &nbsp;|&nbsp; B: Menu<br>
@@ -1433,7 +1433,7 @@ $('c').addEventListener('pointermove', e => {
 // Pointer up (Mobile gestures & direct tap shooting)
 addEventListener('pointerup', e => {
   if (e.button == 2) S.fire = 0;
-  if (e.pointerType == 'mouse' || S.st != 'play' || (e.target.closest && e.target.closest('.m-ctrl-btn, #m-speed'))) return;
+  if (e.pointerType == 'mouse' || S.st != 'play' || (e.target.closest && e.target.closest('.m-ctrl-btn, #m-speed, #sc'))) return;
   const dx = e.clientX - tx,
     dy = e.clientY - ty;
   if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy)) {
@@ -1450,6 +1450,13 @@ addEventListener('pointerup', e => {
     updateAimerPosition(e.clientX, e.clientY);
     shoot();
   }
+});
+
+// Top Center Score Click/Tap to Pause
+$('sc').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  pause();
 });
 
 // 1. Mobile Top-Left Viewpoint Button
